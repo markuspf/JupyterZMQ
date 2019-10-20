@@ -1,43 +1,44 @@
 #!/usr/bin/env python
 
-# Extremely simplistic (read: probably wrong) script to register the native
-# GAP Jupyter Kernel with the Jupyter installation
+# Based on https://jupyter-notebook.readthedocs.io/en/stable/examples/Notebook/Distributing%20Jupyter%20Extensions%20as%20Python%20Packages.html#Automatically-enabling-a-server-extension-and-nbextension
 
-import os
-import sys
-import json
-import argparse
+import setuptools, sys
+from setuptools.command.bdist_egg import bdist_egg
 
-from notebook.nbextensions import check_nbextension, install_nbextension, enable_nbextension
-from jupyter_client.kernelspec import install_kernel_spec
+class bdist_egg_disabled(bdist_egg):
+    """Disabled version of bdist_egg
+    Prevents setup.py install performing setuptools' default easy_install,
+    which it should never ever do.
+    """
+    def run(self):
+        sys.exit("Aborting implicit building of eggs. Use `pip install .` to install from source.")
 
-
-# Installs the Kernel Spec and NBExtension for Syntax Highlighting
-# I am not sure whether this is the correct way of doing it, but
-# it works right now
-# TODO: Find out whether there is a cleaner way
-def install(args):
-    # Write kernel spec in a temporary directory
-    user = False
-    if "user" in args: 
-        user = args.user
-
-    print("Installing jupyter kernel spec")
-    install_kernel_spec('etc/jupyter/', kernel_name='gap-4', user=user)
-
-    print("Installing nbextension for syntax hilighting")
-    install_nbextension('etc/gap-mode',
-                        overwrite=True, user=user)
-    enable_nbextension('notebook', 'gap-mode/main',)
-
-
-parser = argparse.ArgumentParser(description='Register JupyterKernel with Jupyter installation.')
-subparsers = parser.add_subparsers(help='install help')
-
-parser_install = subparsers.add_parser('install', help='install help')
-parser_install.add_argument('--user', dest='user', action='store_const', const=True, default=False
-                                    , help='Install into user\'s Jupyter installation') 
-parser.set_defaults(func=install)
-
-args = parser.parse_args()
-args.func(args)
+setuptools.setup(
+    name="gap-jupyter",
+    include_package_data=True,
+    cmdclass={
+        "bdist_egg": bdist_egg_disabled,
+    },
+    data_files=[
+        # like `jupyter nbextension install --sys-prefix`
+        ("share/jupyter/nbextensions/gap-mode", [
+            "etc/gap-mode/gap.js",
+            "etc/gap-mode/main.js",
+        ]),
+        # like `jupyter nbextension enable --sys-prefix`
+        ("etc/jupyter/nbconfig/notebook.d", [
+            "etc/gap-mode.json"
+        ]),
+        # install kernel spec
+        ("share/jupyter/kernels/gap-4", [
+            "etc/jupyter/kernel.json",
+            "etc/jupyter/logo-32x32.png",
+            "etc/jupyter/logo-64x64.png",
+        ]),
+    ],
+    # install the script
+    scripts=['bin/jupyter-kernel-gap'],
+    zip_safe=False,
+    # Require notebook>=5.3 for automatically enabling the nbextension
+    install_requires=['notebook>=5.3'],
+)

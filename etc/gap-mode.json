@@ -1,0 +1,5 @@
+{
+  "load_extensions": {
+    "gap-mode/main": true
+  }
+}

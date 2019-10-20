@@ -36,13 +36,13 @@ It is necessary to register &JupyterKernel; with your &Jupyter; installation.
 
 Registering the GAP jupyter kernel system-wide works as follows:
 <Log>
-> python setup.py install
+> pip install .
 </Log>
 
 or registering for your user only
 
 <Log>
-> python setup.py install --user
+> pip install . --user
 </Log>
 
 If &GAP; is not in your PATH, then you have to set the environment variable

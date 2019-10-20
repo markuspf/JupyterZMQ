@@ -38,10 +38,8 @@ before_script:
   - pip3 install --user nbconvert
 script:
   - scripts/build_pkg.sh
-  - python3 setup.py install --user
-    # bit of an ugly hack
-  - export PATH=$PWD/bin:$PATH
-  - cp bin/jupyter-kernel-gap /home/travis/.local/bin
+  - pip3 install . --user
+  - export PATH=$HOME/.local/bin:$PATH
   - scripts/run_tests.sh
   - export JUPYTER_GAP_EXECUTABLE="$GAPROOT/gap -l $PWD/gaproot; --quitonbreak --cover $PWD/$COVDIR/testnb.coverage"
   - jupyter nbconvert tst/test.ipynb --to notebook --execute
