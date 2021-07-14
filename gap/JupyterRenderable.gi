@@ -3,7 +3,9 @@ InstallMethod( JupyterRender, "default fallback"
              , [ IsObject ],
 function(obj)
     local str;
-    str := ViewString(obj);
+    # Use the strings corresponding to 'ViewObj'
+    # until enough 'ViewString' methods are available.
+    str := StringView(obj);
     RemoveCharacters(str, "\<\>\n");
     return Objectify( JupyterRenderableType
                     , rec( data := rec( text\/plain := str )
